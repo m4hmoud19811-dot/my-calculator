@@ -49,19 +49,30 @@ public class MainActivity extends Activity {
         return d;
     }
 
-    // Glossy glass surface: subtle vertical tint, bright rim and a soft highlight.
-    private GradientDrawable glassShape(int color, int radius) {
-        int top = Color.argb(lightTheme ? 225 : 205,
+    // Layered translucent glass: the keypad keeps the parent surface visible,
+    // with a bright upper reflection and a fine turquoise glass rim.
+    private android.graphics.drawable.Drawable glassShape(int color, int radius) {
+        int top = Color.argb(lightTheme ? 118 : 105,
                 Color.red(color), Color.green(color), Color.blue(color));
-        int bottom = Color.argb(lightTheme ? 245 : 235,
-                Math.max(0, Color.red(color) - (lightTheme ? 8 : 15)),
-                Math.max(0, Color.green(color) - (lightTheme ? 8 : 15)),
-                Math.max(0, Color.blue(color) - (lightTheme ? 8 : 15)));
-        GradientDrawable d = new GradientDrawable(
+        int bottom = Color.argb(lightTheme ? 165 : 148,
+                Color.red(color), Color.green(color), Color.blue(color));
+        GradientDrawable base = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, new int[]{top, bottom});
-        d.setCornerRadius(radius);
-        d.setStroke(dp(1), Color.argb(lightTheme ? 150 : 190, 145, 255, 245));
-        return d;
+        base.setCornerRadius(radius);
+        base.setStroke(dp(1), Color.argb(lightTheme ? 190 : 220, 105, 255, 238));
+
+        GradientDrawable reflection = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{Color.argb(lightTheme ? 78 : 66, 255, 255, 255),
+                          Color.argb(0, 255, 255, 255)});
+        reflection.setCornerRadius(radius);
+        reflection.setStroke(dp(1), Color.argb(75, 255, 255, 255));
+
+        android.graphics.drawable.LayerDrawable glass =
+                new android.graphics.drawable.LayerDrawable(
+                        new android.graphics.drawable.Drawable[]{base, reflection});
+        glass.setLayerInset(1, dp(2), dp(2), dp(2), dp(18));
+        return glass;
     }
 
     private void buildScreen() {
