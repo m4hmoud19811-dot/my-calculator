@@ -49,6 +49,21 @@ public class MainActivity extends Activity {
         return d;
     }
 
+    // Glossy glass surface: subtle vertical tint, bright rim and a soft highlight.
+    private GradientDrawable glassShape(int color, int radius) {
+        int top = Color.argb(lightTheme ? 225 : 205,
+                Color.red(color), Color.green(color), Color.blue(color));
+        int bottom = Color.argb(lightTheme ? 245 : 235,
+                Math.max(0, Color.red(color) - (lightTheme ? 8 : 15)),
+                Math.max(0, Color.green(color) - (lightTheme ? 8 : 15)),
+                Math.max(0, Color.blue(color) - (lightTheme ? 8 : 15)));
+        GradientDrawable d = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, new int[]{top, bottom});
+        d.setCornerRadius(radius);
+        d.setStroke(dp(1), Color.argb(lightTheme ? 150 : 190, 145, 255, 245));
+        return d;
+    }
+
     private void buildScreen() {
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -247,8 +262,8 @@ public class MainActivity extends Activity {
                     ink = Color.WHITE;
                 }
                 button.setTextColor(ink);
-                button.setBackground(shape(color, dp(17)));
-                button.setElevation(dp(2));
+                button.setBackground(glassShape(color, dp(17)));
+                button.setElevation(dp(3));
                 LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(0, dp(58), 1);
                 bp.setMargins(dp(4), dp(4), dp(4), dp(4));
                 line.addView(button, bp);
