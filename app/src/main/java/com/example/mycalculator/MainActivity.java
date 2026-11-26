@@ -304,7 +304,7 @@ public class MainActivity extends Activity {
                 if (op != '*' && op != '/') break;
                 pos++;
                 double y = factor();
-                if ((op == '/' || op == '%') && y == 0) throw new ArithmeticException();
+                if (op == '/' && y == 0) throw new ArithmeticException();
                 x = op == '*' ? x * y : x / y;
             }
             return x;
@@ -326,6 +326,7 @@ public class MainActivity extends Activity {
                 if (start == pos) throw new IllegalArgumentException();
                 x = Double.parseDouble(s.substring(start, pos));
             }
+            if (pos < s.length() && s.charAt(pos) == '%') { pos++; x /= 100.0; }
             return x;
         }
     }
