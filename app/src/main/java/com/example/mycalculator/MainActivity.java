@@ -301,11 +301,11 @@ public class MainActivity extends Activity {
             double x = factor();
             while (pos < s.length()) {
                 char op = s.charAt(pos);
-                if (op != '*' && op != '/' && op != '%') break;
+                if (op != '*' && op != '/') break;
                 pos++;
                 double y = factor();
                 if ((op == '/' || op == '%') && y == 0) throw new ArithmeticException();
-                x = op == '*' ? x * y : op == '/' ? x / y : x % y;
+                x = op == '*' ? x * y : x / y;
             }
             return x;
         }
