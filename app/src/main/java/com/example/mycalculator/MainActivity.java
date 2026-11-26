@@ -13,18 +13,30 @@ import java.util.Locale;
 
 public class MainActivity extends Activity {
     private LinearLayout root, keypad;
-    private TextView display, history, modeButton;
+    private TextView display, history, modeButton, themeButton, brand, subtitle, foot;
     private boolean scientific = false, degrees = true, resultShown = false;
     private String expression = "";
-    private int bg = Color.rgb(10, 16, 15);
-    private int panel = Color.rgb(22, 32, 29);
-    private int emerald = Color.rgb(0, 190, 125);
-    private int deep = Color.rgb(0, 103, 75);
-    private int white = Color.WHITE;
-    private int muted = Color.rgb(160, 178, 169);
+    private boolean lightTheme = false;
+    private int bg, panel, emerald, deep, white, muted, keyFace;
+
+    private void applyPalette() {
+        if (lightTheme) {
+            bg = Color.rgb(242, 247, 244); panel = Color.rgb(255, 255, 255);
+            emerald = Color.rgb(0, 145, 96); deep = Color.rgb(0, 92, 68);
+            white = Color.rgb(24, 47, 39); muted = Color.rgb(105, 126, 116);
+            keyFace = Color.rgb(224, 239, 231);
+        } else {
+            bg = Color.rgb(10, 16, 15); panel = Color.rgb(22, 32, 29);
+            emerald = Color.rgb(0, 190, 125); deep = Color.rgb(0, 103, 75);
+            white = Color.WHITE; muted = Color.rgb(160, 178, 169);
+            keyFace = Color.rgb(235, 246, 240);
+        }
+    }
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        lightTheme = getPreferences(0).getBoolean("light_theme", false);
+        applyPalette();
         getWindow().setStatusBarColor(bg);
         getWindow().setNavigationBarColor(bg);
         buildScreen();
@@ -45,7 +57,7 @@ public class MainActivity extends Activity {
         root.setPadding(dp(16), dp(18), dp(16), dp(16));
         root.setBackgroundColor(bg);
 
-        TextView brand = new TextView(this);
+        brand = new TextView(this);
         brand.setText("LUX");
         brand.setTextColor(emerald);
         brand.setTextSize(25);
@@ -53,7 +65,7 @@ public class MainActivity extends Activity {
         brand.setGravity(Gravity.CENTER);
         root.addView(brand, new LinearLayout.LayoutParams(-1, dp(38)));
 
-        TextView subtitle = new TextView(this);
+        subtitle = new TextView(this);
         subtitle.setText("CALCULATOR  •  ماشین حساب");
         subtitle.setTextColor(muted);
         subtitle.setTextSize(11);
@@ -70,6 +82,21 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams mp = new LinearLayout.LayoutParams(-1, dp(46));
         mp.topMargin = dp(14);
         root.addView(modeButton, mp);
+        themeButton = new TextView(this);
+        themeButton.setGravity(Gravity.CENTER);
+        themeButton.setTextSize(13);
+        themeButton.setTypeface(null, Typeface.BOLD);
+        themeButton.setTextColor(white);
+        themeButton.setBackground(shape(panel, dp(16)));
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(-1, dp(42));
+        tp.topMargin = dp(8);
+        root.addView(themeButton, tp);
+        themeButton.setOnClickListener(v -> {
+            lightTheme = !lightTheme;
+            getPreferences(0).edit().putBoolean("light_theme", lightTheme).apply();
+            applyPalette();
+            refreshTheme();
+        });
         modeButton.setOnClickListener(v -> {
             scientific = !scientific;
             updateMode();
@@ -103,7 +130,7 @@ public class MainActivity extends Activity {
         kp.topMargin = dp(14);
         root.addView(keypad, kp);
 
-        TextView foot = new TextView(this);
+        foot = new TextView(this);
         foot.setText("LUX CALCULATOR  •  SIMPLE & SCIENTIFIC");
         foot.setTextColor(Color.rgb(92, 116, 105));
         foot.setTextSize(9);
@@ -115,11 +142,34 @@ public class MainActivity extends Activity {
         scroll.addView(root);
         setContentView(scroll);
         updateMode();
+        updateThemeLabel();
         drawKeys();
     }
 
     private void updateMode() {
         modeButton.setText(scientific ? "حالت علمی فعال  •  بازگشت به ساده" : "حالت ساده  •  نمایش ابزارهای علمی");
+    }
+
+    private void updateThemeLabel() {
+        themeButton.setText(lightTheme ? "☀ حالت روشن فعال  •  تغییر به تیره" : "☾ حالت تیره فعال  •  تغییر به روشن");
+    }
+
+    private void refreshTheme() {
+        root.setBackgroundColor(bg);
+        brand.setTextColor(emerald);
+        subtitle.setTextColor(muted);
+        history.setTextColor(muted);
+        display.setTextColor(white);
+        display.setBackground(shape(panel, dp(22)));
+        modeButton.setTextColor(Color.WHITE);
+        modeButton.setBackground(shape(deep, dp(18)));
+        themeButton.setTextColor(white);
+        themeButton.setBackground(shape(panel, dp(16)));
+        foot.setTextColor(muted);
+        getWindow().setStatusBarColor(bg);
+        getWindow().setNavigationBarColor(bg);
+        drawKeys();
+        updateThemeLabel();
     }
 
     private void drawKeys() {
@@ -156,7 +206,7 @@ public class MainActivity extends Activity {
                 button.setTextSize(key.length() > 2 ? 14 : 19);
                 button.setTypeface(null, Typeface.BOLD);
                 button.setGravity(Gravity.CENTER);
-                int color = white, ink = deep;
+                int color = keyFace, ink = white;
                 if ("÷×−+".contains(key) && key.length() == 1) { color = deep; ink = white; }
                 if (key.equals("=")) { color = emerald; ink = Color.rgb(5, 35, 26); }
                 if (key.equals("AC")) { color = emerald; ink = Color.rgb(5, 35, 26); }
