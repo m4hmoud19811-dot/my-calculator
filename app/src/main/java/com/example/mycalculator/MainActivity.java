@@ -84,11 +84,11 @@ public class MainActivity extends Activity {
         root.addView(modeButton, mp);
         themeButton = new TextView(this);
         themeButton.setGravity(Gravity.CENTER);
-        themeButton.setTextSize(13);
+        themeButton.setTextSize(14);
         themeButton.setTypeface(null, Typeface.BOLD);
         themeButton.setTextColor(white);
         themeButton.setBackground(shape(panel, dp(16)));
-        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(-1, dp(42));
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(-1, dp(50));
         tp.topMargin = dp(8);
         root.addView(themeButton, tp);
         themeButton.setOnClickListener(v -> {
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     }
 
     private void updateThemeLabel() {
-        themeButton.setText(lightTheme ? "☀ حالت روشن فعال  •  تغییر به تیره" : "☾ حالت تیره فعال  •  تغییر به روشن");
+        themeButton.setText(lightTheme ? "🎨 تغییر رنگ صفحه و دکمه‌ها  |  روشن" : "🎨 تغییر رنگ صفحه و دکمه‌ها  |  تیره");
     }
 
     private void refreshTheme() {
