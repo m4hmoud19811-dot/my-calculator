@@ -1,4 +1,3 @@
-
 package com.example.mycalculator;
 
 import android.app.Activity;
@@ -7,407 +6,327 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.*;
+
 import java.util.Locale;
 
 public class MainActivity extends Activity {
+    private LinearLayout root, keypad;
+    private TextView display, history, modeButton;
+    private boolean scientific = false, degrees = true, resultShown = false;
+    private String expression = "";
+    private int bg = Color.rgb(10, 16, 15);
+    private int panel = Color.rgb(22, 32, 29);
+    private int emerald = Color.rgb(0, 190, 125);
+    private int deep = Color.rgb(0, 103, 75);
+    private int white = Color.WHITE;
+    private int muted = Color.rgb(160, 178, 169);
 
-    TextView display, history;
-    LinearLayout root, keysLayout;
-
-    String current = "";
-    double first = 0;
-    String operator = "";
-    boolean professional = false;
-    boolean degrees = true;
-    boolean newNumber = true;
-
-    int background = Color.rgb(12, 19, 18);
-    int green = Color.rgb(0, 180, 115);
-    int darkGreen = Color.rgb(0, 100, 72);
-    int white = Color.WHITE;
-    int greenText = Color.rgb(0, 115, 80);
-
-    @Override
-    public void onCreate(Bundle b) {
-        super.onCreate(b);
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
+        getWindow().setStatusBarColor(bg);
+        getWindow().setNavigationBarColor(bg);
         buildScreen();
     }
 
-    GradientDrawable rounded(int color, int radius) {
+    private GradientDrawable shape(int color, int radius) {
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
         d.setCornerRadius(radius);
         return d;
     }
 
-    void buildScreen() {
-
+    private void buildScreen() {
         ScrollView scroll = new ScrollView(this);
-
+        scroll.setFillViewport(true);
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(12, 15, 12, 12);
-        root.setBackgroundColor(background);
+        root.setPadding(dp(16), dp(18), dp(16), dp(16));
+        root.setBackgroundColor(bg);
 
-        TextView title = new TextView(this);
-        title.setText("LUX CALCULATOR");
-        title.setTextColor(green);
-        title.setTextSize(21);
-        title.setTypeface(null, Typeface.BOLD);
-        title.setGravity(Gravity.CENTER);
-        root.addView(title, new LinearLayout.LayoutParams(-1, 55));
+        TextView brand = new TextView(this);
+        brand.setText("LUX");
+        brand.setTextColor(emerald);
+        brand.setTextSize(25);
+        brand.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        brand.setGravity(Gravity.CENTER);
+        root.addView(brand, new LinearLayout.LayoutParams(-1, dp(38)));
 
         TextView subtitle = new TextView(this);
-        subtitle.setText("ماشین حساب لوکس");
-        subtitle.setTextColor(white);
-        subtitle.setTextSize(15);
+        subtitle.setText("CALCULATOR  •  ماشین حساب");
+        subtitle.setTextColor(muted);
+        subtitle.setTextSize(11);
         subtitle.setGravity(Gravity.CENTER);
-        root.addView(subtitle, new LinearLayout.LayoutParams(-1, 30));
+        root.addView(subtitle, new LinearLayout.LayoutParams(-1, dp(24)));
 
-        Button mode = new Button(this);
-        mode.setText("حالت ساده  |  حالت حرفه‌ای");
-        mode.setTextColor(white);
-        mode.setTextSize(15);
-        mode.setAllCaps(false);
-        mode.setBackground(rounded(darkGreen, 22));
-
-        root.addView(mode, new LinearLayout.LayoutParams(-1, 50));
-
-        mode.setOnClickListener(v -> {
-            professional = !professional;
-            mode.setText(professional ?
-                "حالت حرفه‌ای فعال  |  بازگشت به ساده" :
-                "حالت ساده  |  حالت حرفه‌ای");
+        modeButton = new TextView(this);
+        modeButton.setGravity(Gravity.CENTER);
+        modeButton.setTextSize(14);
+        modeButton.setTypeface(null, Typeface.BOLD);
+        modeButton.setTextColor(white);
+        modeButton.setBackground(shape(deep, dp(18)));
+        modeButton.setPadding(dp(12), 0, dp(12), 0);
+        LinearLayout.LayoutParams mp = new LinearLayout.LayoutParams(-1, dp(46));
+        mp.topMargin = dp(14);
+        root.addView(modeButton, mp);
+        modeButton.setOnClickListener(v -> {
+            scientific = !scientific;
+            updateMode();
             drawKeys();
         });
 
         history = new TextView(this);
-        history.setTextColor(green);
-        history.setTextSize(16);
+        history.setTextColor(muted);
+        history.setTextSize(14);
         history.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        history.setPadding(10, 5, 10, 5);
-        root.addView(history, new LinearLayout.LayoutParams(-1, 40));
+        history.setSingleLine(true);
+        history.setPadding(dp(8), 0, dp(8), 0);
+        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(-1, dp(38));
+        hp.topMargin = dp(14);
+        root.addView(history, hp);
 
         display = new TextView(this);
         display.setText("0");
         display.setTextColor(white);
-        display.setTextSize(40);
+        display.setTextSize(38);
         display.setTypeface(null, Typeface.BOLD);
         display.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        display.setPadding(15, 10, 15, 10);
-        display.setBackground(rounded(Color.rgb(25, 38, 34), 22));
+        display.setSingleLine(true);
+        display.setPadding(dp(16), dp(8), dp(16), dp(8));
+        display.setBackground(shape(panel, dp(22)));
+        root.addView(display, new LinearLayout.LayoutParams(-1, dp(104)));
 
-        root.addView(display, new LinearLayout.LayoutParams(-1, 110));
+        keypad = new LinearLayout(this);
+        keypad.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams kp = new LinearLayout.LayoutParams(-1, -2);
+        kp.topMargin = dp(14);
+        root.addView(keypad, kp);
 
-        keysLayout = new LinearLayout(this);
-        keysLayout.setOrientation(LinearLayout.VERTICAL);
-
-        LinearLayout.LayoutParams kp =
-            new LinearLayout.LayoutParams(-1, -2);
-        kp.topMargin = 15;
-        root.addView(keysLayout, kp);
+        TextView foot = new TextView(this);
+        foot.setText("LUX CALCULATOR  •  SIMPLE & SCIENTIFIC");
+        foot.setTextColor(Color.rgb(92, 116, 105));
+        foot.setTextSize(9);
+        foot.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(-1, dp(32));
+        fp.topMargin = dp(8);
+        root.addView(foot, fp);
 
         scroll.addView(root);
         setContentView(scroll);
-
+        updateMode();
         drawKeys();
     }
 
-    void drawKeys() {
+    private void updateMode() {
+        modeButton.setText(scientific ? "حالت علمی فعال  •  بازگشت به ساده" : "حالت ساده  •  نمایش ابزارهای علمی");
+    }
 
-        keysLayout.removeAllViews();
+    private void drawKeys() {
+        keypad.removeAllViews();
+        String[][] rows = scientific ? new String[][] {
+            {"sin","cos","tan","√"},
+            {"x²","1/x","ln","log"},
+            {"π","e","(",")"},
+            {"AC","⌫","%","÷"},
+            {"7","8","9","×"},
+            {"4","5","6","−"},
+            {"1","2","3","+"},
+            {"±","0",".","="},
+            {"DEG","RAD",""}
+        } : new String[][] {
+            {"AC","⌫","%","÷"},
+            {"7","8","9","×"},
+            {"4","5","6","−"},
+            {"1","2","3","+"},
+            {"±","0",".","="}
+        };
 
-        String[][] keys;
-
-        if (professional) {
-            keys = new String[][] {
-                {"sin", "cos", "tan", "√"},
-                {"x²", "1/x", "ln", "log"},
-                {"π", "e", "(", ")"},
-                {"AC", "⌫", "%", "÷"},
-                {"7", "8", "9", "×"},
-                {"4", "5", "6", "−"},
-                {"1", "2", "3", "+"},
-                {"±", "0", ".", "="},
-                {"DEG", "RAD", "ساده", "پاک"}
-            };
-        } else {
-            keys = new String[][] {
-                {"AC", "⌫", "%", "÷"},
-                {"7", "8", "9", "×"},
-                {"4", "5", "6", "−"},
-                {"1", "2", "3", "+"},
-                {"±", "0", ".", "="}
-            };
-        }
-
-        for (String[] row : keys) {
-
+        for (String[] row : rows) {
             LinearLayout line = new LinearLayout(this);
-
+            line.setOrientation(LinearLayout.HORIZONTAL);
             for (String key : row) {
-
-                Button btn = new Button(this);
-                btn.setText(key);
-                btn.setTextSize(18);
-                btn.setTypeface(null, Typeface.BOLD);
-                btn.setAllCaps(false);
-                btn.setPadding(0, 0, 0, 0);
-
-                int color = white;
-                int textColor = greenText;
-
-                if ("÷×−+=".contains(key) && key.length() == 1) {
-                    color = darkGreen;
-                    textColor = white;
+                if (key.isEmpty()) {
+                    View spacer = new View(this);
+                    line.addView(spacer, new LinearLayout.LayoutParams(0, dp(58), 1));
+                    continue;
                 }
-
-                if (key.equals("AC") || key.equals("=")) {
-                    color = green;
-                    textColor = Color.BLACK;
-                }
-
-                if (key.equals("⌫")) {
-                    color = Color.rgb(55, 75, 68);
-                    textColor = white;
-                }
-
-                if (key.equals("DEG") || key.equals("RAD")
-                    || key.equals("ساده") || key.equals("پاک")) {
-                    color = darkGreen;
-                    textColor = white;
-                }
-
-                btn.setTextColor(textColor);
-                btn.setBackground(rounded(color, 18));
-
-                LinearLayout.LayoutParams bp =
-                    new LinearLayout.LayoutParams(0, 62, 1);
-
-                bp.setMargins(4, 5, 4, 5);
-                line.addView(btn, bp);
-
-                btn.setOnClickListener(v -> press(key));
+                TextView button = new TextView(this);
+                button.setText(key);
+                button.setTextSize(key.length() > 2 ? 14 : 19);
+                button.setTypeface(null, Typeface.BOLD);
+                button.setGravity(Gravity.CENTER);
+                int color = white, ink = deep;
+                if ("÷×−+".contains(key) && key.length() == 1) { color = deep; ink = white; }
+                if (key.equals("=")) { color = emerald; ink = Color.rgb(5, 35, 26); }
+                if (key.equals("AC")) { color = emerald; ink = Color.rgb(5, 35, 26); }
+                if (key.equals("⌫")) { color = Color.rgb(57, 76, 68); ink = white; }
+                if (key.equals("DEG") || key.equals("RAD")) { color = deep; ink = white; }
+                button.setTextColor(ink);
+                button.setBackground(shape(color, dp(17)));
+                button.setElevation(dp(2));
+                LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(0, dp(58), 1);
+                bp.setMargins(dp(4), dp(4), dp(4), dp(4));
+                line.addView(button, bp);
+                button.setOnClickListener(v -> press(key));
             }
-
-            keysLayout.addView(line);
+            keypad.addView(line);
         }
     }
 
-    String format(double n) {
-
-        if (Double.isNaN(n) || Double.isInfinite(n))
-            return "خطا";
-
-        if (Math.abs(n) < 0.000000001)
-            n = 0;
-
-        String s = String.format(Locale.US, "%.8f", n);
-
-        while (s.contains(".") && s.endsWith("0"))
-            s = s.substring(0, s.length() - 1);
-
-        if (s.endsWith("."))
-            s = s.substring(0, s.length() - 1);
-
-        return s;
+    private int dp(float value) {
+        return (int)(value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    void press(String key) {
+    private void showExpression() {
+        display.setText(expression.isEmpty() ? "0" : expression);
+    }
 
+    private void press(String key) {
         try {
-
-            if (key.equals("AC") || key.equals("پاک")) {
-                current = "";
-                operator = "";
-                first = 0;
-                history.setText("");
-                newNumber = true;
+            switch (key) {
+                case "AC":
+                    expression = "";
+                    history.setText("");
+                    resultShown = false;
+                    break;
+                case "⌫":
+                    if (!expression.isEmpty()) expression = expression.substring(0, expression.length() - 1);
+                    resultShown = false;
+                    break;
+                case "=":
+                    if (!expression.trim().isEmpty()) {
+                        String old = expression;
+                        double value = new Parser(expression).parse();
+                        expression = format(value);
+                        history.setText(old + "  =");
+                        resultShown = true;
+                    }
+                    break;
+                case "DEG": degrees = true; history.setText("زاویه: درجه"); break;
+                case "RAD": degrees = false; history.setText("زاویه: رادیان"); break;
+                case "±":
+                    if (expression.isEmpty()) expression = "-";
+                    else if (resultShown) expression = format(-new Parser(expression).parse());
+                    else expression = "-(" + expression + ")";
+                    resultShown = false;
+                    break;
+                case "sin": case "cos": case "tan": case "√": case "x²": case "1/x": case "ln": case "log":
+                    applyScientific(key);
+                    break;
+                case "π": appendValue("3.141592653589793"); break;
+                case "e": appendValue("2.718281828459045"); break;
+                default:
+                    if (resultShown && (isDigit(key) || key.equals("."))) expression = "";
+                    resultShown = false;
+                    if (key.equals(".") && lastNumberHasDot()) break;
+                    expression += key;
+                    break;
             }
-
-            else if (key.equals("⌫")) {
-                if (!current.isEmpty()) {
-                    current = current.substring(0, current.length() - 1);
-                }
-            }
-
-            else if (key.equals("ساده")) {
-                professional = false;
-                drawKeys();
-            }
-
-            else if (key.equals("DEG")) {
-                degrees = true;
-                history.setText("حالت درجه فعال");
-            }
-
-            else if (key.equals("RAD")) {
-                degrees = false;
-                history.setText("حالت رادیان فعال");
-            }
-
-            else if (key.equals("π")) {
-                current = format(Math.PI);
-                newNumber = false;
-            }
-
-            else if (key.equals("e")) {
-                current = format(Math.E);
-                newNumber = false;
-            }
-
-            else if (key.equals("±")) {
-                if (!current.isEmpty())
-                    current = format(-Double.parseDouble(current));
-            }
-
-            else if (key.equals("sin") || key.equals("cos")
-                    || key.equals("tan") || key.equals("√")
-                    || key.equals("x²") || key.equals("1/x")
-                    || key.equals("ln") || key.equals("log")) {
-
-                scientific(key);
-            }
-
-            else if (key.equals("=")) {
-                calculate();
-            }
-
-            else if ("+-−×÷".contains(key) && key.length() == 1) {
-
-                if (!current.isEmpty()) {
-                    if (!operator.isEmpty()) calculate();
-
-                    first = Double.parseDouble(current);
-                    operator = key;
-                    current = "";
-                    newNumber = true;
-                }
-            }
-
-            else if (key.equals("%")) {
-                if (!current.isEmpty())
-                    current = format(Double.parseDouble(current) / 100);
-            }
-
-            else if (key.equals("(") || key.equals(")")) {
-                history.setText("پرانتز در نسخه بعدی تکمیل می‌شود");
-            }
-
-            else if (key.equals(".")) {
-                if (newNumber) {
-                    current = "0.";
-                    newNumber = false;
-                } else if (!current.contains(".")) {
-                    current += ".";
-                }
-            }
-
-            else {
-                if (newNumber) {
-                    current = key;
-                    newNumber = false;
-                } else if (current.length() < 16) {
-                    current += key;
-                }
-            }
-
-            display.setText(current.isEmpty() ? "0" : current);
-
-        } catch (Exception e) {
-            current = "";
-            operator = "";
+            showExpression();
+        } catch (Exception ex) {
+            history.setText("عبارت نامعتبر است");
             display.setText("خطا");
+            expression = "";
+            resultShown = false;
         }
     }
 
-    void scientific(String key) {
-
-        double x = current.isEmpty() ? 0 :
-            Double.parseDouble(current);
-
-        double angle = degrees ? Math.toRadians(x) : x;
-        double result = 0;
-
-        switch (key) {
-
-            case "sin":
-                result = Math.sin(angle);
-                break;
-
-            case "cos":
-                result = Math.cos(angle);
-                break;
-
-            case "tan":
-                result = Math.tan(angle);
-                break;
-
-            case "√":
-                if (x < 0) throw new ArithmeticException();
-                result = Math.sqrt(x);
-                break;
-
-            case "x²":
-                result = x * x;
-                break;
-
-            case "1/x":
-                if (x == 0) throw new ArithmeticException();
-                result = 1 / x;
-                break;
-
-            case "ln":
-                if (x <= 0) throw new ArithmeticException();
-                result = Math.log(x);
-                break;
-
-            case "log":
-                if (x <= 0) throw new ArithmeticException();
-                result = Math.log10(x);
-                break;
-        }
-
-        history.setText(key + " (" + format(x) + ")");
-        current = format(result);
-        newNumber = true;
+    private void appendValue(String value) {
+        if (resultShown) expression = "";
+        expression += value;
+        resultShown = false;
     }
 
-    void calculate() {
+    private boolean isDigit(String s) { return s.length() == 1 && s.charAt(0) >= '0' && s.charAt(0) <= '9'; }
 
-        if (current.isEmpty() || operator.isEmpty())
-            return;
-
-        double second = Double.parseDouble(current);
-        double result = 0;
-
-        history.setText(format(first) + " " +
-            operator + " " + format(second));
-
-        switch (operator) {
-
-            case "+":
-                result = first + second;
-                break;
-
-            case "−":
-                result = first - second;
-                break;
-
-            case "×":
-                result = first * second;
-                break;
-
-            case "÷":
-                if (second == 0) throw new ArithmeticException();
-                result = first / second;
-                break;
+    private boolean lastNumberHasDot() {
+        for (int i = expression.length() - 1; i >= 0; i--) {
+            char c = expression.charAt(i);
+            if (c == '.') return true;
+            if (!(Character.isDigit(c))) break;
         }
+        return false;
+    }
 
-        current = format(result);
-        operator = "";
-        newNumber = true;
-        display.setText(current);
+    private void applyScientific(String fn) {
+        if (expression.isEmpty()) return;
+        double x = new Parser(expression).parse();
+        double a = degrees ? Math.toRadians(x) : x;
+        double y;
+        switch (fn) {
+            case "sin": y = Math.sin(a); break;
+            case "cos": y = Math.cos(a); break;
+            case "tan": y = Math.tan(a); break;
+            case "√": if (x < 0) throw new ArithmeticException(); y = Math.sqrt(x); break;
+            case "x²": y = x * x; break;
+            case "1/x": if (x == 0) throw new ArithmeticException(); y = 1 / x; break;
+            case "ln": if (x <= 0) throw new ArithmeticException(); y = Math.log(x); break;
+            default: if (x <= 0) throw new ArithmeticException(); y = Math.log10(x); break;
+        }
+        history.setText(fn + "(" + format(x) + ")");
+        expression = format(y);
+        resultShown = true;
+    }
+
+    private String format(double n) {
+        if (Double.isNaN(n) || Double.isInfinite(n)) throw new ArithmeticException();
+        if (Math.abs(n) < 1e-10) n = 0;
+        return String.format(Locale.US, "%.8f", n).replaceAll("0+$", "").replaceAll("\\.$", "");
+    }
+
+    // Recursive-descent calculator: parentheses, unary signs, %, and operator precedence.
+    private static class Parser {
+        private final String s;
+        private int pos = 0;
+        Parser(String input) { s = input.replace("×", "*").replace("÷", "/").replace("−", "-").replace(" ", ""); }
+        double parse() {
+            double value = expression();
+            if (pos != s.length()) throw new IllegalArgumentException();
+            if (Double.isNaN(value) || Double.isInfinite(value)) throw new ArithmeticException();
+            return value;
+        }
+        double expression() {
+            double x = term();
+            while (pos < s.length()) {
+                char op = s.charAt(pos);
+                if (op != '+' && op != '-') break;
+                pos++;
+                double y = term();
+                x = op == '+' ? x + y : x - y;
+            }
+            return x;
+        }
+        double term() {
+            double x = factor();
+            while (pos < s.length()) {
+                char op = s.charAt(pos);
+                if (op != '*' && op != '/' && op != '%') break;
+                pos++;
+                double y = factor();
+                if ((op == '/' || op == '%') && y == 0) throw new ArithmeticException();
+                x = op == '*' ? x * y : op == '/' ? x / y : x % y;
+            }
+            return x;
+        }
+        double factor() {
+            if (pos >= s.length()) throw new IllegalArgumentException();
+            char c = s.charAt(pos);
+            if (c == '+') { pos++; return factor(); }
+            if (c == '-') { pos++; return -factor(); }
+            double x;
+            if (c == '(') {
+                pos++;
+                x = expression();
+                if (pos >= s.length() || s.charAt(pos) != ')') throw new IllegalArgumentException();
+                pos++;
+            } else {
+                int start = pos;
+                while (pos < s.length() && (Character.isDigit(s.charAt(pos)) || s.charAt(pos) == '.')) pos++;
+                if (start == pos) throw new IllegalArgumentException();
+                x = Double.parseDouble(s.substring(start, pos));
+            }
+            return x;
+        }
     }
 }
