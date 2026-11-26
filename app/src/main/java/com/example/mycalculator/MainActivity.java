@@ -24,12 +24,12 @@ public class MainActivity extends Activity {
             bg = Color.rgb(242, 247, 244); panel = Color.rgb(255, 255, 255);
             emerald = Color.rgb(0, 145, 96); deep = Color.rgb(0, 92, 68);
             white = Color.rgb(24, 47, 39); muted = Color.rgb(105, 126, 116);
-            keyFace = Color.rgb(224, 239, 231);
+            keyFace = Color.rgb(225, 241, 235);
         } else {
             bg = Color.rgb(10, 16, 15); panel = Color.rgb(22, 32, 29);
             emerald = Color.rgb(0, 190, 125); deep = Color.rgb(0, 103, 75);
             white = Color.WHITE; muted = Color.rgb(160, 178, 169);
-            keyFace = Color.rgb(235, 246, 240);
+            keyFace = Color.rgb(29, 43, 42);
         }
     }
 
@@ -57,13 +57,27 @@ public class MainActivity extends Activity {
         root.setPadding(dp(16), dp(18), dp(16), dp(16));
         root.setBackgroundColor(bg);
 
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
         brand = new TextView(this);
         brand.setText("LUX");
         brand.setTextColor(emerald);
         brand.setTextSize(25);
         brand.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        brand.setGravity(Gravity.CENTER);
-        root.addView(brand, new LinearLayout.LayoutParams(-1, dp(38)));
+        brand.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+        header.addView(brand, new LinearLayout.LayoutParams(0, dp(42), 1));
+
+        themeButton = new TextView(this);
+        themeButton.setText("◐  ▾");
+        themeButton.setGravity(Gravity.CENTER);
+        themeButton.setTextSize(15);
+        themeButton.setTypeface(null, Typeface.BOLD);
+        themeButton.setTextColor(emerald);
+        themeButton.setBackground(shape(panel, dp(14)));
+        themeButton.setElevation(dp(3));
+        header.addView(themeButton, new LinearLayout.LayoutParams(dp(54), dp(36)));
+        root.addView(header, new LinearLayout.LayoutParams(-1, dp(42)));
 
         subtitle = new TextView(this);
         subtitle.setText("CALCULATOR  •  ماشین حساب");
@@ -82,20 +96,23 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams mp = new LinearLayout.LayoutParams(-1, dp(46));
         mp.topMargin = dp(14);
         root.addView(modeButton, mp);
-        themeButton = new TextView(this);
-        themeButton.setGravity(Gravity.CENTER);
-        themeButton.setTextSize(14);
-        themeButton.setTypeface(null, Typeface.BOLD);
-        themeButton.setTextColor(white);
-        themeButton.setBackground(shape(panel, dp(16)));
-        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(-1, dp(50));
-        tp.topMargin = dp(8);
-        root.addView(themeButton, tp);
         themeButton.setOnClickListener(v -> {
-            lightTheme = !lightTheme;
-            getPreferences(0).edit().putBoolean("light_theme", lightTheme).apply();
-            applyPalette();
-            refreshTheme();
+            android.widget.PopupMenu menu = new android.widget.PopupMenu(MainActivity.this, themeButton);
+            menu.getMenu().add("تم مشکی و فیروزه‌ای").setOnMenuItemClickListener(item -> {
+                lightTheme = false;
+                getPreferences(0).edit().putBoolean("light_theme", false).apply();
+                applyPalette();
+                refreshTheme();
+                return true;
+            });
+            menu.getMenu().add("تم روشن و فیروزه‌ای").setOnMenuItemClickListener(item -> {
+                lightTheme = true;
+                getPreferences(0).edit().putBoolean("light_theme", true).apply();
+                applyPalette();
+                refreshTheme();
+                return true;
+            });
+            menu.show();
         });
         modeButton.setOnClickListener(v -> {
             scientific = !scientific;
@@ -151,7 +168,8 @@ public class MainActivity extends Activity {
     }
 
     private void updateThemeLabel() {
-        themeButton.setText(lightTheme ? "🎨 تغییر رنگ صفحه و دکمه‌ها  |  روشن" : "🎨 تغییر رنگ صفحه و دکمه‌ها  |  تیره");
+        themeButton.setText("◐  ▾");
+        themeButton.setContentDescription(lightTheme ? "انتخاب تم روشن" : "انتخاب تم تیره");
     }
 
     private void refreshTheme() {
@@ -206,12 +224,28 @@ public class MainActivity extends Activity {
                 button.setTextSize(key.length() > 2 ? 14 : 19);
                 button.setTypeface(null, Typeface.BOLD);
                 button.setGravity(Gravity.CENTER);
-                int color = keyFace, ink = white;
-                if ("÷×−+".contains(key) && key.length() == 1) { color = deep; ink = white; }
-                if (key.equals("=")) { color = emerald; ink = Color.rgb(5, 35, 26); }
-                if (key.equals("AC")) { color = emerald; ink = Color.rgb(5, 35, 26); }
-                if (key.equals("⌫")) { color = Color.rgb(57, 76, 68); ink = white; }
-                if (key.equals("DEG") || key.equals("RAD")) { color = deep; ink = white; }
+                int color = keyFace;
+                int ink = lightTheme ? Color.rgb(10, 48, 39) : Color.WHITE;
+                if ("÷×−+".contains(key) && key.length() == 1) {
+                    color = lightTheme ? Color.rgb(0, 137, 112) : Color.rgb(0, 139, 125);
+                    ink = Color.WHITE;
+                }
+                if (key.equals("=")) {
+                    color = Color.rgb(0, 210, 190);
+                    ink = Color.rgb(2, 35, 33);
+                }
+                if (key.equals("AC")) {
+                    color = lightTheme ? Color.rgb(255, 224, 222) : Color.rgb(113, 48, 52);
+                    ink = lightTheme ? Color.rgb(150, 35, 38) : Color.rgb(255, 224, 224);
+                }
+                if (key.equals("⌫")) {
+                    color = lightTheme ? Color.rgb(202, 226, 219) : Color.rgb(48, 76, 74);
+                    ink = lightTheme ? Color.rgb(15, 65, 57) : Color.WHITE;
+                }
+                if (key.equals("DEG") || key.equals("RAD")) {
+                    color = lightTheme ? Color.rgb(0, 137, 112) : Color.rgb(0, 111, 105);
+                    ink = Color.WHITE;
+                }
                 button.setTextColor(ink);
                 button.setBackground(shape(color, dp(17)));
                 button.setElevation(dp(2));
